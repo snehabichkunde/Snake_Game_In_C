@@ -10,23 +10,33 @@
 #define FRAME_RATE 60  // Limit frame rate to 60 FPS
 #define FRAME_DELAY (1000 / FRAME_RATE)  // Delay per frame
 
+
+typedef struct {
+    int x, y;
+} SnakeSegment;
+
+SnakeSegment snake = {5, 9};    // initialise the snake at position (5,9)
+
 void draw_background(SDL_Renderer* renderer) {
-    for (int i = 0; i < HEIGHT; i++) {
-        int shade = 34 + (i * 5 / HEIGHT);  
-        SDL_SetRenderDrawColor(renderer, shade, 139, 34, 255);
-        SDL_RenderDrawLine(renderer, 0, i, WIDTH, i);
-    }
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  // Black background
+    SDL_RenderClear(renderer);
 }
 
 void draw_grid(SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 50, 50, 50, 100);
-
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // White grid lines
+    
     for (int i = 0; i <= ROWS; i++) {
         SDL_RenderDrawLine(renderer, 0, i * CELL_SIZE, WIDTH, i * CELL_SIZE);
     }
     for (int j = 0; j <= COLS; j++) {
         SDL_RenderDrawLine(renderer, j * CELL_SIZE, 0, j * CELL_SIZE, HEIGHT);
     }
+}
+
+void draw_snake(SDL_Renderer* renderer){
+    SDL_SetRenderDrawColor(renderer, 0, 225, 0, 255);
+    SDL_Rect rect = {snake.x * CELL_SIZE, snake.y * CELL_SIZE, CELL_SIZE, CELL_SIZE};
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 int main() {
@@ -37,7 +47,7 @@ int main() {
         return 1;
     }
 
-    SDL_Window* window = SDL_CreateWindow("🐍 Optimized Snake Board",
+    SDL_Window* window = SDL_CreateWindow("\U0001F40D Optimized Snake Board",
                                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                           WIDTH, HEIGHT,
                                           SDL_WINDOW_SHOWN);
@@ -68,10 +78,10 @@ int main() {
             }
         }
 
-        // Render only at 60 FPS
-        SDL_RenderClear(renderer);
+        // Render at 60 FPS
         draw_background(renderer);
         draw_grid(renderer);
+        draw_snake(renderer);
         SDL_RenderPresent(renderer);
 
         // Calculate frame time and delay if needed
