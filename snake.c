@@ -76,6 +76,22 @@ int main() {
             if (event.type == SDL_QUIT) {
                 running = 0;
             }
+            if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_UP:
+                        snake.y--;  //  up
+                        break;
+                    case SDLK_DOWN:
+                        snake.y++;  //  down
+                        break;
+                    case SDLK_LEFT:
+                        snake.x--;  //  left
+                        break;
+                    case SDLK_RIGHT:
+                        snake.x++;  //  right
+                        break;
+                }
+            }
         }
 
         // Render at 60 FPS
@@ -83,6 +99,8 @@ int main() {
         draw_grid(renderer);
         draw_snake(renderer);
         SDL_RenderPresent(renderer);
+
+
 
         // Calculate frame time and delay if needed
         Uint32 frame_time = SDL_GetTicks() - frame_start;
