@@ -9,13 +9,17 @@
 
 #define FRAME_RATE 60  // Limit frame rate to 60 FPS
 #define FRAME_DELAY (1000 / FRAME_RATE)  // Delay per frame
-
+#define SPEED 100  // Snake moves every 100ms
 
 typedef struct {
     int x, y;
 } SnakeSegment;
 
-SnakeSegment snake = {5, 9};    // initialise the snake at position (5,9)
+typedef struct {
+    int dx, dy;  // Movement in x and y direction
+} Velocity;
+
+SnakeSegment snake = {5, 9};  // Start position
 
 void draw_background(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  // Black background
@@ -24,7 +28,6 @@ void draw_background(SDL_Renderer* renderer) {
 
 void draw_grid(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);  // White grid lines
-    
     for (int i = 0; i <= ROWS; i++) {
         SDL_RenderDrawLine(renderer, 0, i * CELL_SIZE, WIDTH, i * CELL_SIZE);
     }
@@ -33,13 +36,15 @@ void draw_grid(SDL_Renderer* renderer) {
     }
 }
 
-void draw_snake(SDL_Renderer* renderer){
+void draw_snake(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 0, 225, 0, 255);
     SDL_Rect rect = {snake.x * CELL_SIZE, snake.y * CELL_SIZE, CELL_SIZE, CELL_SIZE};
     SDL_RenderFillRect(renderer, &rect);
 }
 
 int main() {
+    Velocity vel = {1, 0};  // Start moving right
+
     printf("Starting Optimized Snake Game Board...\n");
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -68,10 +73,12 @@ int main() {
 
     int running = 1;
     SDL_Event event;
+    Uint32 lastUpdate = SDL_GetTicks();  // Declare lastUpdate here
 
     while (running) {
         Uint32 frame_start = SDL_GetTicks();  // Track frame start time
 
+        // Handle events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = 0;
@@ -79,19 +86,26 @@ int main() {
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_UP:
-                        snake.y--;  //  up
+                        if (vel.dy == 0) { vel.dx = 0; vel.dy = -1; } // Prevent reversing from down to up
                         break;
                     case SDLK_DOWN:
-                        snake.y++;  //  down
+                        if (vel.dy == 0) { vel.dx = 0; vel.dy = 1; }  // Prevent reversing from up to down
                         break;
                     case SDLK_LEFT:
-                        snake.x--;  //  left
+                        if (vel.dx == 0) { vel.dx = -1; vel.dy = 0; } // Prevent reversing from right to left
                         break;
                     case SDLK_RIGHT:
-                        snake.x++;  //  right
+                        if (vel.dx == 0) { vel.dx = 1; vel.dy = 0; }  // Prevent reversing from left to right
                         break;
                 }
             }
+        }
+
+        // Update snake position at a constant speed
+        if (SDL_GetTicks() - lastUpdate > SPEED) {
+            snake.x += vel.dx;
+            snake.y += vel.dy;
+            lastUpdate = SDL_GetTicks();
         }
 
         // Render at 60 FPS
@@ -99,8 +113,6 @@ int main() {
         draw_grid(renderer);
         draw_snake(renderer);
         SDL_RenderPresent(renderer);
-
-
 
         // Calculate frame time and delay if needed
         Uint32 frame_time = SDL_GetTicks() - frame_start;
